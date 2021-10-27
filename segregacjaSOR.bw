@@ -1,0 +1,266 @@
+knowledge base segregacjaSOR
+ 
+control
+ setSysText(problem, "Segregacja pacjentów na SOR");
+ run;
+ setAppWinTitle("Segregacja pacjentów na SOR");
+ createAppWindow;
+ vignette("Segregacja pacjentów na SOR",
+ "System doradczy wspomagaj¹cy procedurê segregacji pacjentów na SOR",
+ "Anna Modzelewska, Medyczne Systemy Doradcze, IB, IwM, 2020/2021");
+ menu"Otwórz menu"
+ 1. "Nowy pacjent"
+ 2. "Wyjœcie"
+ case 1:
+ goal("kategoria = X");
+ delNewFacts;
+ case 2:
+ exit; 
+end;  end;
+
+facets
+      single yes;
+      ask yes;
+      
+      kategoria:     // wynik wnioskowania
+       ask no
+       val oneof {"czerwona", "pomarañczowa", "¿ó³ta", "zielona", "niebieska"};
+           
+      oddech:
+       query "Czy pacjent oddycha prawid³owo?"
+       val oneof {"tak", "nie"};
+      
+      wstrzas:
+       query "Czy pacjent jest we wstrz¹sie?"
+       val oneof {"tak", "nie"};
+       
+      zaburzenia_serca:
+       query "Czy wystêpuj¹ zaburzenia akcji serca?"
+       val oneof {"tak", "nie"};
+       
+      swiadomosc:
+       query "Czy pacjent spe³nia proste polecenia?"
+       val oneof {"tak", "nie"};
+       
+      drgawki:
+       query "Czy wystêpuj¹ drgawki?"
+       val oneof {"tak", "nie"};
+       
+      powod_zgloszenia:
+       query "Wybierz grupê objawów, do której nale¿y powód zg³oszenia"
+       val oneof {"Uraz", "Cia³o obce", "Zatrucia", "Zaburzenia temperatury cia³a", "Odwodnienie", "Ból", "Krwotok"};
+       
+      urazy:
+       query "Typ urazu"
+       val oneof {"uraz wielonarz¹dowy", "uraz termiczny", "uraz g³owy", "uraz krêgos³upa", "amputacja urazowa", "uraz brzucha ciê¿arnej", "z³amanie", "masywne obra¿enia tkanek miêkkich", "drobny uraz", "uraz powsta³y tydzieñ wczeœniej"}; 
+       
+      uraz_termiczny:
+       query "Rodzaj urazu"
+       val oneof {"oparzenie", "odmro¿enie"};
+       
+      oparzenie_lokalizacja:
+       query "Lokalizacja oparzenia"
+       val oneof {"twarz", "szyja", "drogi oddechowe", "krocze", "poœladki", "inna"};
+       
+      oparzenie_powierzchnia:
+       query "Czy powierzchnia oparzenia przekracza 15% powierzchni cia³a pacjenta?"    
+       val oneof {"tak", "nie"};  
+       
+      zlamanie_rodzaj:
+       query "Rodzaj z³amania"
+       val oneof {"otwarte", "zamkniête"};
+       
+      zlamanie_lokalizacja:
+        query "Lokalizacja z³amania"
+        val oneof {"miednica", "koœæ udowa", "inna"};
+       
+      cialo_obce:
+       query "Lokalizacja cia³a obcego"
+       val oneof {"g³owa", "drogi oddechowe", "klatka piersiowa", "uk³ad pokarmowy", "inna"}; 
+         
+      zatrucie_substancja:
+       query "Wybierz rodzaj substancji"
+       val oneof {"leki", "chemikalia", "alkohol", "narkotyki", "pokarm", "substancja nieznana"};
+      
+      temperatura:
+       query "Podaj temperaturê cia³a pacjenta"
+       unit "stopnie Celsjusza"
+       val range <26,42>;
+       
+      wysoka_goraczka:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      goraczka:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      temperatura_norma:
+       ask no
+       val oneof {"tak", "nie"}; 
+       
+      hipotermia_umiarkowana:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      hipotermia_srednia:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      hipotermia_gleboka:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      odwodnienie:
+       query "Stopieñ odwodnienia"
+       val oneof {"lekkie", "umiarkowane", "ciê¿kie"};
+      
+      bol:
+       query "Rodzaj bólu"
+       val oneof {"przewlek³y", "nag³y"};
+       
+      bol_skala:
+       query "Ból w skali 0-10"
+       val range <0,10>;
+       
+      bol_silny:
+       ask no
+       val oneof {"tak", "nie"};
+       
+      bol_umiarkowany:
+       ask no
+       val oneof {"tak", "nie"};
+      
+      bol_lekki:
+       ask no
+       val oneof {"tak", "nie"}; 
+       
+      krwotok:
+       query "Okreœl rodzaj krwotoku"
+       val oneof {"bezpoœrednio zagra¿aj¹cy ¿yciu", "rozleg³y", "niewielki"}; 
+       
+end;
+
+rules
+kategoria = "czerwona" if
+          oddech = "nie"; 
+          
+kategoria = "czerwona" if
+          wstrzas = "tak";
+
+kategoria = "czerwona" if
+          zaburzenia_serca = "tak";
+          
+kategoria = "czerwona" if
+          swiadomosc = "nie";
+          
+kategoria = "czerwona" if
+          drgawki = "tak";
+          
+kategoria = "czerwona" if
+          powod_zgloszenia = "Zaburzenia temperatury cia³a" & hipotermia_gleboka = "tak";
+          
+kategoria = "czerwona" if
+          (powod_zgloszenia = "Uraz" & (urazy = "uraz wielonarz¹dowy" | urazy = "uraz g³owy" | urazy = "uraz brzucha ciê¿arnej")|
+          (urazy = "uraz termiczny" & (uraz_termiczny = "oparzenie" & (oparzenie_lokalizacja = "twarz" | oparzenie_lokalizacja = "szyja" | oparzenie_lokalizacja = "drogi oddechowe" | oparzenie_lokalizacja = "krocze" | oparzenie_lokalizacja = "poœladki"))));
+          
+kategoria = "czerwona" if
+          powod_zgloszenia = "Cia³o obce" & (cialo_obce = "g³owa" | cialo_obce = "klatka piersiowa");
+          
+kategoria = "czerwona" if
+          powod_zgloszenia = "Odwodnienie" & odwodnienie = "ciê¿kie";
+          
+kategoria = "czerwona" if
+          powod_zgloszenia = "Krwotok" & krwotok = "bezpoœrednio zagra¿aj¹cy ¿yciu";
+          
+kategoria = "pomarañczowa" if
+          powod_zgloszenia = "Zatrucia" & (zatrucie_substancja = "leki" | zatrucie_substancja = "chemikalia" | zatrucie_substancja = "substancja nieznana");
+          
+kategoria = "pomarañczowa" if          
+          powod_zgloszenia = "Cia³o obce" & cialo_obce = "drogi oddechowe";
+          
+kategoria = "pomarañczowa" if 
+          powod_zgloszenia = "Ból" & (bol = "nag³y" & bol_silny = "tak");
+           
+kategoria = "pomarañczowa" if
+          powod_zgloszenia = "Zaburzenia temperatury cia³a" & (wysoka_goraczka = "tak" | hipotermia_srednia = "tak");
+          
+kategoria = "pomarañczowa" if
+          powod_zgloszenia = "Krwotok" & krwotok = "rozleg³y";
+          
+kategoria = "pomarañczowa" if
+          (powod_zgloszenia = "Uraz" & (urazy = "z³amanie" & (zlamanie_lokalizacja = "miednica" | zlamanie_lokalizacja = "koœæ udowa" | zlamanie_rodzaj = "otwarte")) |
+          (urazy = "uraz krêgos³upa" | urazy = "amputacja urazowa" | urazy = "masywne obra¿enia tkanek miêkkich") |
+          (urazy = "uraz termiczny" & uraz_termiczny = "oparzenie" & oparzenie_lokalizacja = "inna" & oparzenie_powierzchnia = "tak"));
+
+kategoria = "¿ó³ta" if
+          (powod_zgloszenia = "Uraz" & (urazy = "z³amanie" & zlamanie_lokalizacja = "inna" & zlamanie_rodzaj = "zamkniête" )|
+          (urazy = "uraz termiczny" & uraz_termiczny = "odmro¿enie"));
+          
+kategoria = "¿ó³ta" if
+          powod_zgloszenia = "Cia³o obce" & (cialo_obce = "uk³ad pokarmowy" | cialo_obce = "inna");
+          
+kategoria = "¿ó³ta" if
+          powod_zgloszenia = "Odwodnienie" & odwodnienie = "umiarkowane";
+          
+kategoria = "¿ó³ta" if
+          powod_zgloszenia = "Ból" & bol = "nag³y" & bol_umiarkowany = "tak";
+          
+kategoria = "¿ó³ta" if
+          powod_zgloszenia = "Zaburzenia temperatury cia³a" & hipotermia_umiarkowana = "tak";
+          
+kategoria = "¿ó³ta" if
+          powod_zgloszenia = "Krwotok" & krwotok = "niewielki";
+
+kategoria = "zielona" if
+          (powod_zgloszenia = "Uraz" & (urazy = "uraz termiczny" & uraz_termiczny = "oparzenie" & oparzenie_lokalizacja = "inna" & oparzenie_powierzchnia = "nie")|
+          urazy = "drobny uraz");
+          
+kategoria = "zielona" if
+          powod_zgloszenia = "Zatrucia" & (zatrucie_substancja = "alkohol" | zatrucie_substancja = "narkotyki" | zatrucie_substancja = "pokarm");
+          
+kategoria = "zielona" if
+          powod_zgloszenia = "Odwodnienie" & odwodnienie = "lekkie";
+          
+kategoria = "zielona" if
+          powod_zgloszenia = "Ból" & bol = "nag³y" & bol_lekki = "tak";
+          
+kategoria = "zielona" if
+          powod_zgloszenia = "Zaburzenia temperatury cia³a" & goraczka = "tak";
+
+kategoria = "niebieska" if
+          powod_zgloszenia = "Uraz" & urazy = "uraz powsta³y tydzieñ wczeœniej";
+          
+kategoria = "niebieska" if
+          powod_zgloszenia = "Ból" & bol = "przewlek³y";
+
+kategoria = "niebieska" if
+          powod_zgloszenia = "Zaburzenia temperatury cia³a" & temperatura_norma = "tak";
+                   
+wysoka_goraczka = "tak" if                
+                temperatura=X, X > 39;
+
+goraczka = "tak" if
+                temperatura=X, X > 38 & X <= 39;
+
+temperatura_norma = "tak" if
+                temperatura=X, X > 35 & X <= 38;
+                
+hipotermia_umiarkowana = "tak" if
+                temperatura=X, X > 32 & X <= 35;
+                
+hipotermia_srednia = "tak" if
+                temperatura=X, X > 30 & X <= 32;
+                
+hipotermia_gleboka = "tak" if
+                temperatura=X, X <= 30;
+
+bol_silny = "tak" if
+          bol_skala = X, X >= 7;
+          
+bol_umiarkowany = "tak" if
+          bol_skala = X, X >= 4 & X < 7;
+
+bol_lekki = "tak" if
+          bol_skala = X, X >= 0 & X < 4;                   
+end; end;
